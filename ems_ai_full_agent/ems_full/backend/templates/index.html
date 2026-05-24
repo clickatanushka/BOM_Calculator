@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMS AI Quotation System</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">EMS·AI</div>
+  <div class="header-title">EMS AI Quotation System</div>
+  <div class="header-file" id="header-file">No file loaded</div>
+</header>
+
+<main class="container">
+
+  <!-- UPLOAD SCREEN -->
+  <section id="upload-screen">
+    <div class="hero">
+      <h1>Upload BOM Excel File</h1>
+      <p>Parse BOMs, fetch live DigiKey prices, check SMT feasibility, and generate professional quotations with AI.</p>
+    </div>
+    <div class="drop-zone" id="drop-zone">
+      <div class="upload-icon">📊</div>
+      <h2>Drag &amp; Drop BOM File</h2>
+      <p>Supports .xlsx and .xls files</p>
+      <button class="btn-primary" onclick="document.getElementById('file-input').click()">Browse File</button>
+      <input type="file" id="file-input" accept=".xlsx,.xls">
+    </div>
+    <div class="features">
+      <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-title">BOM Parsing</div><div class="feature-text">Auto detect headers and clean data</div></div>
+      <div class="feature-card"><div class="feature-icon">💰</div><div class="feature-title">Live Pricing</div><div class="feature-text">Real DigiKey prices per component</div></div>
+      <div class="feature-card"><div class="feature-icon">⚙️</div><div class="feature-title">SMT Check</div><div class="feature-text">Feasibility per package type</div></div>
+      <div class="feature-card"><div class="feature-icon">🤖</div><div class="feature-title">AI Agent</div><div class="feature-text">Full automation in one click</div></div>
+    </div>
+  </section>
+
+  <!-- APP SCREEN -->
+  <section id="app-screen" class="hidden">
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('bom')">📋 BOM</button>
+      <button class="tab" onclick="showTab('issues')">⚠️ Issues</button>
+      <button class="tab" onclick="showTab('smt')">⚙️ SMT Check</button>
+      <button class="tab" onclick="showTab('quote')">💰 Quotation</button>
+      <button class="tab" onclick="showTab('ai')">🤖 AI Assistant</button>
+      <button class="tab" onclick="showTab('agent')">🚀 Full Agent</button>
+      <button class="tab" onclick="resetApp()" style="margin-left:auto;color:#ef4444;">↩ New File</button>
+    </div>
+
+    <!-- BOM TAB -->
+    <div id="tab-bom" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">TOTAL LINES</div><div class="stat-value" id="stat-total">0</div></div>
+        <div class="stat-card"><div class="stat-label">ACTIVE</div><div class="stat-value green" id="stat-active">0</div></div>
+        <div class="stat-card"><div class="stat-label">DNP</div><div class="stat-value amber" id="stat-dnp">0</div></div>
+        <div class="stat-card"><div class="stat-label">ISSUES</div><div class="stat-value red" id="stat-issues">0</div></div>
+      </div>
+
+      <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="enrichBOM()" id="enrich-btn">🔍 Fetch Live Prices (DigiKey)</button>
+        <button class="btn-outline" onclick="runSMTCheck()">⚙️ Check SMT</button>
+        <span id="enrich-status" style="font-size:13px;color:#8a93b0;"></span>
+      </div>
+
+      <div class="filter-row">
+        <input type="text" id="search-box" placeholder="Search components...">
+        <select id="mount-filter"><option value="">All Mount Types</option><option value="SMD">SMD</option><option value="THT">THT</option></select>
+        <select id="dnp-filter"><option value="">All Rows</option><option value="N">Active Only</option><option value="Y">DNP Only</option></select>
+      </div>
+
+      <div class="table-wrapper">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Ref</th><th>Description</th><th>MPN</th>
+                <th>Mfr</th><th>Package</th><th>Qty</th>
+                <th>Unit €</th><th>DK Price</th><th>Stock</th>
+                <th>Mount</th><th>Status</th><th>AI</th>
+              </tr>
+            </thead>
+            <tbody id="bom-table-body"></tbody>
+          </table>
+        </div>
+        <div class="total-bar">
+          <div>Active BOM Cost / Board</div>
+          <div id="bom-total">€0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ISSUES TAB -->
+    <div id="tab-issues" class="tab-content hidden">
+      <div class="card">
+        <h2>⚠️ BOM Issues</h2>
+        <div id="issues-list"></div>
+      </div>
+    </div>
+
+    <!-- SMT TAB -->
+    <div id="tab-smt" class="tab-content hidden">
+      <div class="card">
+        <h2>⚙️ SMT Feasibility Report</h2>
+        <div id="smt-overall" style="margin-bottom:16px;"></div>
+        <div id="smt-summary" style="margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;"></div>
+        <button class="btn-primary" onclick="runSMTCheck()" style="margin-bottom:16px;">Run SMT Check</button>
+        <div class="table-wrapper">
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr><th>Ref</th><th>Description</th><th>MPN</th><th>Package</th><th>Qty</th><th>Risk</th><th>Reason</th></tr>
+              </thead>
+              <tbody id="smt-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUOTATION TAB -->
+    <div id="tab-quote" class="tab-content hidden">
+      <div class="card">
+        <h2>💰 Quotation Settings</h2>
+        <div class="form-grid">
+          <div class="form-group"><label>Customer Name</label><input type="text" id="customer-name" value="Acme Electronics"></div>
+          <div class="form-group"><label>Project Name</label><input type="text" id="project-name" value="My PCB Project"></div>
+          <div class="form-group"><label>Quotation Ref</label><input type="text" id="quote-ref" value="QT-2026-001"></div>
+          <div class="form-group"><label>Board Quantity</label><input type="number" id="board-qty" value="100" oninput="updateQuotation()"></div>
+          <div class="form-group"><label>Assembly Cost / Board (€)</label><input type="number" id="assembly-cost" value="8.5" step="0.5" oninput="updateQuotation()"></div>
+          <div class="form-group"><label>Margin (%)</label><input type="number" id="margin" value="20" oninput="updateQuotation()"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Cost Breakdown</h2>
+        <table class="quote-table">
+          <thead><tr><th>Item</th><th>Per Board</th><th>Total (<span id="q-qty-label">100</span> pcs)</th></tr></thead>
+          <tbody>
+            <tr><td>Component cost (BOM)</td><td id="q-bom-unit">€0.00</td><td id="q-bom-total">€0.00</td></tr>
+            <tr><td>Assembly cost</td><td id="q-asm-unit">€0.00</td><td id="q-asm-total">€0.00</td></tr>
+            <tr><td>Subtotal</td><td id="q-sub-unit">€0.00</td><td id="q-sub-total">€0.00</td></tr>
+            <tr><td>Margin (<span id="q-margin-label">20</span>%)</td><td id="q-markup-unit">€0.00</td><td id="q-markup-total">€0.00</td></tr>
+            <tr class="sell-row"><td>💰 SELL PRICE</td><td id="q-sell-unit">€0.00</td><td id="q-sell-total">€0.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>📥 Export</h2>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="exportExcel()">📊 Download Excel</button>
+          <button class="btn-primary" onclick="exportPDF()" style="background:#22c55e;">📄 Download PDF</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📧 AI Email Draft</h2>
+        <p style="margin-bottom:14px;opacity:0.7;font-size:13px;">Generate a professional email to send to your customer.</p>
+        <button class="btn-primary" onclick="draftEmail()">Draft Email with AI ✨</button>
+        <div class="ai-output" id="email-output" style="display:none;margin-top:14px;"></div>
+        <button id="copy-email-btn" onclick="copyEmail()" style="display:none;margin-top:8px;" class="btn-outline">📋 Copy Email</button>
+      </div>
+
+      <div class="card">
+        <h2>🤖 AI Quotation Description</h2>
+        <p style="margin-bottom:14px;opacity:0.7;font-size:13px;">Generate a professional scope of work description.</p>
+        <button class="btn-primary" onclick="generateQuoteDescription()">Generate Description ✨</button>
+        <div class="ai-output" id="quote-ai-output" style="display:none;margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- AI TAB -->
+    <div id="tab-ai" class="tab-content hidden">
+      <div class="card">
+        <h2>🤖 AI Assistant</h2>
+        <div class="ai-row">
+          <input type="text" id="ai-input" placeholder="Ask about any component or EMS topic...">
+          <button class="btn-primary" onclick="askAI()">Ask AI</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+          <button class="btn-quick" onclick="setQ('What does the STM32 microcontroller do?')">STM32 role</button>
+          <button class="btn-quick" onclick="setQ('Why do we use decoupling capacitors?')">Decoupling caps</button>
+          <button class="btn-quick" onclick="setQ('What is the difference between SMD and THT?')">SMD vs THT</button>
+          <button class="btn-quick" onclick="setQ('What does DNP mean?')">What is DNP?</button>
+          <button class="btn-quick" onclick="setQ('What is a BGA package and why is it hard to assemble?')">BGA explained</button>
+          <button class="btn-quick" onclick="setQ('What is QFN and what makes it difficult?')">QFN explained</button>
+        </div>
+        <div class="ai-output" id="ai-output">AI responses will appear here...</div>
+      </div>
+      <div class="card">
+        <h2>Component Explainer</h2>
+        <p style="opacity:0.7;margin-bottom:14px;font-size:13px;">Click any component to get an AI explanation.</p>
+        <div id="ai-component-list"></div>
+        <div class="ai-output" id="ai-explain-output" style="display:none;margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- FULL AGENT TAB -->
+    <div id="tab-agent" class="tab-content hidden">
+      <div class="card">
+        <h2>🚀 Full EMS AI Agent</h2>
+        <p style="opacity:0.7;font-size:13px;margin-bottom:16px;">
+          One click runs everything automatically: DigiKey prices → SMT check → quotation → PDF → email draft.
+        </p>
+        <button class="btn-primary" id="agent-btn" onclick="runFullAgent()" style="font-size:15px;padding:12px 28px;">
+          🚀 Run Full Agent
+        </button>
+      </div>
+
+      <div class="card hidden" id="agent-progress-card">
+        <h2>⏳ Agent Progress</h2>
+        <div id="agent-steps"></div>
+      </div>
+
+      <div class="card hidden" id="agent-results-card">
+        <h2>✅ Agent Complete</h2>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;">Quotation Summary</div>
+          <div id="agent-quote-summary"></div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;">SMT Feasibility</div>
+          <div id="agent-smt-summary"></div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;">Email Draft</div>
+          <div class="ai-output" id="agent-email" style="display:block;"></div>
+          <button class="btn-outline" onclick="copyAgentEmail()" style="margin-top:8px;">📋 Copy Email</button>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn-primary" onclick="exportPDF()">📄 Download PDF</button>
+          <button class="btn-primary" onclick="exportExcel()" style="background:#22c55e;">📊 Download Excel</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
