@@ -4,11 +4,12 @@ import os
 import io
 from quotation_engine import process_bom
 from ai_helper import ask_ai
-from digikey_helper import enrich_bom
+from price_engine import enrich_bom
 from smt_checker import check_smt
 from pdf_generator import generate_pdf
 from email_drafter import draft_quotation_email
 from agent import run_agent
+from pdf_bom_parser import parse_pdf_bom
 
 app = Flask(__name__)
 CORS(app)
@@ -26,22 +27,64 @@ def home():
 
 
 # ── UPLOAD BOM ──
+# @app.route("/upload-bom", methods=["POST"])
+# def upload_bom():
+#     if "file" not in request.files:
+#         return jsonify({"error": "No file uploaded"}), 400
+#     file = request.files["file"]
+#     if file.filename == "":
+#         return jsonify({"error": "Empty filename"}), 400
+#     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+#     file.save(filepath)
+#     try:
+#         result = process_bom(filepath)
+#         return jsonify(result)
+#     except Exception as e:
+#         print("ERROR in process_bom:", e)
+#         return jsonify({"error": str(e)}), 500
+
+# ==========================================
+# REPLACE your /upload-bom route in app.py
+# with this — handles both PDF and Excel
+# ==========================================
+
+# ADD this import at top of app.py:
+# from pdf_bom_parser import parse_pdf_bom
+
 @app.route("/upload-bom", methods=["POST"])
 def upload_bom():
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
+
     file = request.files["file"]
+
     if file.filename == "":
         return jsonify({"error": "Empty filename"}), 400
+
     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
-    try:
-        result = process_bom(filepath)
-        return jsonify(result)
-    except Exception as e:
-        print("ERROR in process_bom:", e)
-        return jsonify({"error": str(e)}), 500
 
+    try:
+        filename_lower = file.filename.lower()
+
+        # detect file type and use correct parser
+        if filename_lower.endswith(".pdf"):
+            print(f">>> PDF BOM detected: {file.filename}")
+            result = parse_pdf_bom(filepath)
+        elif filename_lower.endswith(".xlsx") or filename_lower.endswith(".xls"):
+            print(f">>> Excel BOM detected: {file.filename}")
+            result = process_bom(filepath)
+        else:
+            return jsonify({"error": "Unsupported file type. Use .xlsx, .xls, or .pdf"}), 400
+
+        # store filepath for agent use
+        result["filepath"] = filepath
+
+        return jsonify(result)
+
+    except Exception as e:
+        print("ERROR in upload_bom:", e)
+        return jsonify({"error": str(e)}), 500
 
 # ── ASK AI ──
 @app.route("/ask-ai", methods=["POST"])
@@ -58,8 +101,52 @@ def ai_route():
         return jsonify({"error": str(e)}), 500
 
 
-# ── ENRICH BOM (DigiKey prices) ──
+# # ── ENRICH BOM (DigiKey prices) ──
+# @app.route("/enrich-bom", methods=["POST"])
+# def enrich_bom_route():
+#     data      = request.json
+#     bom       = data.get("bom", [])
+#     board_qty = int(data.get("board_qty", 1))
+#     try:
+#         enriched = enrich_bom(bom, board_qty=board_qty)
+#         total = sum(
+#         (r.get("nexar_price") or r.get("unit_price") or 0) * r.get("qty", 1)
+#         for r in enriched if r.get("dnp") != "Y"
+#         )
+#         return jsonify({"bom": enriched, "total_cost": round(total, 2)})
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
 @app.route("/enrich-bom", methods=["POST"])
+def enrich_bom_route():
+    data      = request.json
+    bom       = data.get("bom", [])
+    board_qty = int(data.get("board_qty", 1))
+
+    try:
+        enriched = enrich_bom(bom, board_qty=board_qty)
+        
+        # Sum extended_price (already = unit × component_qty × board_qty)
+        total = sum(
+            r.get("extended_price", 0)
+            for r in enriched
+            if r.get("dnp") != "Y" and r.get("extended_price") is not None
+        )
+        
+        return jsonify({
+            "bom":        enriched,
+            "total_cost": round(total, 4),
+            "board_qty":  board_qty,       # send back so frontend can verify
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── SMT FEASIBILITY CHECK ──
+@app.route("/check-smt", methods=["POST"])
+def check_smt_route():
+    data = request.json
+    bom  = data.get("bom", [])@app.route("/enrich-bom", methods=["POST"])
 def enrich_bom_route():
     data = request.json
     bom  = data.get("bom", [])
@@ -73,13 +160,6 @@ def enrich_bom_route():
         return jsonify({"bom": enriched, "total_cost": round(total, 2)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# ── SMT FEASIBILITY CHECK ──
-@app.route("/check-smt", methods=["POST"])
-def check_smt_route():
-    data = request.json
-    bom  = data.get("bom", [])
     try:
         result = check_smt(bom)
         return jsonify(result)
