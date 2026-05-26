@@ -1,12 +1,23 @@
+# from dotenv import load_dotenv
+# load_dotenv()
+
+# import os
+# import requests
+
+# GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+# GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions"
+# GROQ_MODEL   = "llama-3.1-8b-instant"
+
 from dotenv import load_dotenv
 load_dotenv()
 
-import os
 import requests
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL   = "llama-3.1-8b-instant"
+# HARD-CODED API KEY
+GROQ_API_KEY = "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"
+
+GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.1-8b-instant"
 
 def ask_ai(question, bom_summary=""):
     if not GROQ_API_KEY:
