@@ -1,6 +1,7 @@
 import requests
 import concurrent.futures
 import math
+import time
 
 DIGIKEY_CLIENT_ID     = "xZNLqBj9kFGjls5vRocFu6tnSVj932GlpLgGTkmXrqWvsetK"
 DIGIKEY_CLIENT_SECRET = "nX3vtCXALui2UAIbIfLFyFWlFobXTx1NADDBofyUSGTgI58yeUiN5R3Yy1pBbk0L"
@@ -114,6 +115,7 @@ def search_digikey(mpn, total_qty=1, exact=True):
     token = get_digikey_token()
     if not token:
         return None
+    time.sleep(1) 
 
     headers = {
         "Authorization":             f"Bearer {token}",
