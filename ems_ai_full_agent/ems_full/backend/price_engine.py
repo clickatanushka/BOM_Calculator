@@ -545,8 +545,12 @@ def enrich_bom(bom_rows, board_qty=1):
 
         return i, row
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        for i, row in executor.map(lookup, enumerate(bom_rows)):
-            enriched[i] = row
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    #     for i, row in executor.map(lookup, enumerate(bom_rows)):
+    #         enriched[i] = row
+
+    for item in enumerate(bom_rows):
+        i, row = lookup(item)
+        enriched[i] = row
 
     return enriched
