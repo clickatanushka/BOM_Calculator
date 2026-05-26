@@ -14,7 +14,7 @@ load_dotenv()
 import requests
 
 # HARD-CODED API KEY
-GROQ_API_KEY = "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"
+GROQ_API_KEY = ""
 
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.1-8b-instant"
