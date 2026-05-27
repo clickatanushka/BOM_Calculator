@@ -47,6 +47,9 @@
       <button class="tab" onclick="showTab('quote')">💰 Quotation</button>
       <button class="tab" onclick="showTab('ai')">🤖 AI Assistant</button>
       <button class="tab" onclick="showTab('agent')">🚀 Full Agent</button>
+      <button class="tab" onclick="showTab('feasibility')">🔬 Feasibility</button>
+      <button class="tab" onclick="showTab('pcb')">🖥️ PCB</button>
+      <button class="tab" onclick="showTab('programming')">💾 Programming</button>
       <button class="tab" onclick="resetApp()" style="margin-left:auto;color:#ef4444;">↩ New File</button>
     </div>
 
@@ -247,6 +250,64 @@
         <div style="display:flex;gap:10px;">
           <button class="btn-primary" onclick="exportPDF()">📄 Download PDF</button>
           <button class="btn-primary" onclick="exportExcel()" style="background:#22c55e;">📊 Download Excel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEASIBILITY TAB -->
+    <div id="tab-feasibility" class="tab-content hidden">
+      <div class="card">
+        <h2>🔬 Full Feasibility Analysis</h2>
+        <p style="color:#8a93b0;font-size:13px;margin-bottom:16px;">
+          Advanced feasibility checks beyond SMT — DFM rules, component clearance, 
+          thermal analysis, and assembly complexity scoring.
+        </p>
+        <div style="padding:40px;text-align:center;border:2px dashed #2a3050;border-radius:8px;">
+          <div style="font-size:32px;margin-bottom:12px;">🔬</div>
+          <div style="color:#8a93b0;font-size:14px;">Coming soon — Full DFM & feasibility engine</div>
+          <div style="color:#4a5570;font-size:12px;margin-top:8px;">
+            Will include: DFM rules · Thermal analysis · Component clearance · 
+            Complexity scoring · Machine compatibility · Risk report PDF
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PCB TAB -->
+    <div id="tab-pcb" class="tab-content hidden">
+      <div class="card">
+        <h2>🖥️ PCB Analysis</h2>
+        <p style="color:#8a93b0;font-size:13px;margin-bottom:16px;">
+          Upload Gerber or Pick &amp; Place files for layer stackup analysis, 
+          component placement validation, and feeder setup suggestion.
+        </p>
+        <div style="padding:40px;text-align:center;border:2px dashed #2a3050;border-radius:8px;">
+          <div style="font-size:32px;margin-bottom:12px;">🖥️</div>
+          <div style="color:#8a93b0;font-size:14px;">Coming soon — PCB &amp; Gerber analysis</div>
+          <div style="color:#4a5570;font-size:12px;margin-top:8px;">
+            Will include: Gerber upload · Layer stackup · Pick &amp; Place validation · 
+            Feeder plan · Component placement check · SMT program export
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRAMMING TAB -->
+    <div id="tab-programming" class="tab-content hidden">
+      <div class="card">
+        <h2>💾 Programming & Firmware</h2>
+        <p style="color:#8a93b0;font-size:13px;margin-bottom:16px;">
+          Manage firmware versions, programming requirements, and flash configurations 
+          for programmable components in your BOM.
+        </p>
+        <div style="padding:40px;text-align:center;border:2px dashed #2a3050;border-radius:8px;">
+          <div style="font-size:32px;margin-bottom:12px;">💾</div>
+          <div style="color:#8a93b0;font-size:14px;">Coming soon — Programming & Firmware management</div>
+          <div style="color:#4a5570;font-size:12px;margin-top:8px;">
+            Will include: Firmware version tracking · Flash configuration · 
+            ISP/JTAG/SWD support · Programming time estimation · 
+            Batch programming plan · MCU/FPGA detection from BOM
+          </div>
         </div>
       </div>
     </div>
