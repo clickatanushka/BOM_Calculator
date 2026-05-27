@@ -1,4 +1,4 @@
-const BACKEND_URL = "https://bom-calculator-yddu.onrender.com";
+const BACKEND_URL = "http://localhost:5000";
 
 let bomData           = [];
 let bomStats          = {};
@@ -383,7 +383,10 @@ function renderBOMTable() {
                     </div>`;
                 }).join("");
                 return `<div style="font-size:11px;margin-bottom:6px;">
-                    <span style="color:#8a93b0;">${s.supplier}:</span>
+                    ${s.url
+                        ? `<a href="${s.url}" target="_blank" style="color:#8a93b0;text-decoration:none;">${s.supplier} ↗</a>:`
+                        : `<span style="color:#8a93b0;">${s.supplier}:</span>`
+                    }
                     <span style="color:#e8ecf4;font-weight:600;font-family:monospace;">€${Number(eur).toFixed(4)}</span>
                     ${rawLabel}
                     <span style="color:#4a5570;">(${s.stock > 0 ? Number(s.stock).toLocaleString() : "OUT"})</span>
@@ -414,12 +417,18 @@ function renderBOMTable() {
 
         // MPN: truncate with tooltip
         const mpnDisplay = '<span title="' + (row.mpn||"") + '">' + (row.mpn || "—") + '</span>';
+        if (row.nexar_url) console.log("HAS URL:", row.mpn, row.nexar_url);
 
         tr.innerHTML =
             '<td ' + cs("#")         + '>' + (row.id || "") + '</td>' +
             '<td class="mono" '      + cs("ref")         + '>' + refDisplay  + '</td>' +
             '<td '                   + cs("description") + '>' + descDisplay + '</td>' +
-            '<td class="mono small" '+ cs("mpn")         + '>' + (row.mpn || "—") + '</td>' +
+            '<td class="mono small" '+ cs("mpn") + '>' + 
+                (row.nexar_url 
+                    ? '<a href="' + row.nexar_url + '" target="_blank" style="color:#4f8fff;text-decoration:none;" title="View on ' + (row.nexar_supplier||'supplier') + '">' + (row.mpn||"—") + ' ↗</a>'
+                    : (row.mpn || "—")
+                ) + 
+            '</td>' +
             '<td '                   + cs("mfr")         + ' title="' + (row.manufacturer||"") + '">' + (row.manufacturer || "—") + '</td>' +
             '<td class="mono small" '+ cs("package")     + ' title="' + (row.package||"") + '">' + (row.package || "—") + '</td>' +
             '<td class="mono" '      + cs("qty")         + '>' + (row.qty || 0) + '</td>' +
@@ -984,7 +993,7 @@ function showTab(name) {
     document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
     const target = document.getElementById("tab-" + name);
     if (target) target.classList.remove("hidden");
-    const names = ["bom", "issues", "smt", "quote", "ai", "agent"];
+    const names = ["bom", "issues", "smt", "quote", "ai", "agent", "feasibility", "pcb", "programming"];
     document.querySelectorAll(".tab").forEach((btn, i) => {
         btn.classList.toggle("active", names[i] === name);
     });
