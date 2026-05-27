@@ -10,8 +10,20 @@
 
 <header class="header">
   <div class="logo">EMS·AI</div>
-  <div class="header-title">EMS AI Quotation System</div>
+  <div class="header-title" data-i18n="app_title">EMS AI Quotation System</div>
   <div class="header-file" id="header-file">No file loaded</div>
+  <button id="lang-toggle" onclick="toggleLang()" style="
+    margin-left:16px;
+    background:#1e2336;
+    border:1px solid #2d3555;
+    color:#e8ecf4;
+    padding:5px 12px;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+  ">🇩🇪 Deutsch</button>
 </header>
 
 <main class="container">
@@ -19,21 +31,21 @@
   <!-- UPLOAD SCREEN -->
   <section id="upload-screen">
     <div class="hero">
-      <h1>Upload BOM Excel File</h1>
+      <h1 data-i18n="upload_title">Upload BOM Excel File</h1>
       <p>Parse BOMs, fetch live DigiKey prices, check SMT feasibility, and generate professional quotations with AI.</p>
     </div>
     <div class="drop-zone" id="drop-zone">
       <div class="upload-icon">📊</div>
-      <h2>Drag &amp; Drop BOM File</h2>
-      <p>Supports .xlsx and .xls files</p>
-      <button class="btn-primary" onclick="document.getElementById('file-input').click()">Browse File</button>
-      <input type="file" id="file-input" accept=".xlsx,.xls">
+      <h2 data-i18n="upload_subtitle">Drag &amp; Drop BOM File</h2>
+      <p data-i18n="upload_formats">Supports .xlsx and .xls files</p>
+      <button class="btn-primary" onclick="document.getElementById('file-input').click()" data-i18n="upload_subtitle">Browse File</button>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.pdf">
     </div>
     <div class="features">
-      <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-title">BOM Parsing</div><div class="feature-text">Auto detect headers and clean data</div></div>
+      <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-title" data-i18n="tab_bom">BOM Parsing</div><div class="feature-text">Auto detect headers and clean data</div></div>
       <div class="feature-card"><div class="feature-icon">💰</div><div class="feature-title">Live Pricing</div><div class="feature-text">Real DigiKey prices per component</div></div>
-      <div class="feature-card"><div class="feature-icon">⚙️</div><div class="feature-title">SMT Check</div><div class="feature-text">Feasibility per package type</div></div>
-      <div class="feature-card"><div class="feature-icon">🤖</div><div class="feature-title">AI Agent</div><div class="feature-text">Full automation in one click</div></div>
+      <div class="feature-card"><div class="feature-icon">⚙️</div><div class="feature-title" data-i18n="tab_smt">SMT Check</div><div class="feature-text">Feasibility per package type</div></div>
+      <div class="feature-card"><div class="feature-icon">🤖</div><div class="feature-title" data-i18n="tab_agent">AI Agent</div><div class="feature-text">Full automation in one click</div></div>
     </div>
   </section>
 
@@ -41,65 +53,86 @@
   <section id="app-screen" class="hidden">
 
     <div class="tabs">
-      <button class="tab active" onclick="showTab('bom')">📋 BOM</button>
-      <button class="tab" onclick="showTab('issues')">⚠️ Issues</button>
-      <button class="tab" onclick="showTab('smt')">⚙️ SMT Check</button>
-      <button class="tab" onclick="showTab('quote')">💰 Quotation</button>
-      <button class="tab" onclick="showTab('ai')">🤖 AI Assistant</button>
-      <button class="tab" onclick="showTab('agent')">🚀 Full Agent</button>
-      <button class="tab" onclick="showTab('feasibility')">🔬 Feasibility</button>
-      <button class="tab" onclick="showTab('pcb')">🖥️ PCB</button>
-      <button class="tab" onclick="showTab('programming')">💾 Programming</button>
-      <button class="tab" onclick="resetApp()" style="margin-left:auto;color:#ef4444;">↩ New File</button>
+      <button class="tab active" onclick="showTab('bom')"         data-i18n="tab_bom">📋 BOM</button>
+      <button class="tab"        onclick="showTab('issues')"       data-i18n="tab_issues">⚠️ Issues</button>
+      <button class="tab"        onclick="showTab('smt')"          data-i18n="tab_smt">⚙️ SMT Check</button>
+      <button class="tab"        onclick="showTab('quote')"        data-i18n="tab_quote">💰 Quotation</button>
+      <button class="tab"        onclick="showTab('ai')"           data-i18n="tab_ai">🤖 AI Assistant</button>
+      <button class="tab"        onclick="showTab('agent')"        data-i18n="tab_agent">🚀 Full Agent</button>
+      <button class="tab"        onclick="showTab('feasibility')">🔬 Feasibility</button>
+      <button class="tab"        onclick="showTab('pcb')">🖥️ PCB</button>
+      <button class="tab"        onclick="showTab('programming')">💾 Programming</button>
+      <button class="tab"        onclick="resetApp()" style="margin-left:auto;color:#ef4444;" data-i18n="new_file">↩ New File</button>
     </div>
 
     <!-- BOM TAB -->
     <div id="tab-bom" class="tab-content">
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">TOTAL LINES</div><div class="stat-value" id="stat-total">0</div></div>
-        <div class="stat-card"><div class="stat-label">ACTIVE</div><div class="stat-value green" id="stat-active">0</div></div>
-        <div class="stat-card"><div class="stat-label">DNP</div><div class="stat-value amber" id="stat-dnp">0</div></div>
-        <div class="stat-card"><div class="stat-label">ISSUES</div><div class="stat-value red" id="stat-issues">0</div></div>
+        <div class="stat-card">
+          <div class="stat-label" data-i18n="stat_total">TOTAL LINES</div>
+          <div class="stat-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" data-i18n="stat_active">ACTIVE</div>
+          <div class="stat-value green" id="stat-active">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" data-i18n="stat_dnp">DNP</div>
+          <div class="stat-value amber" id="stat-dnp">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" data-i18n="stat_issues">ISSUES</div>
+          <div class="stat-value red" id="stat-issues">0</div>
+        </div>
       </div>
 
       <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn-primary" onclick="enrichBOM()" id="enrich-btn">🔍 Fetch Live Prices </button>
-        <button class="btn-outline" onclick="runSMTCheck()">⚙️ Check SMT</button>
+        <button class="btn-primary" onclick="enrichBOM()" id="enrich-btn" data-i18n="fetch_prices">🔍 Fetch Live Prices</button>
+        <button class="btn-outline"  onclick="runSMTCheck()"               data-i18n="check_smt">⚙️ Check SMT</button>
         <span id="enrich-status" style="font-size:13px;color:#8a93b0;"></span>
       </div>
 
       <div class="filter-row">
-        <input type="text" id="search-box" placeholder="Search components...">
-        <select id="mount-filter"><option value="">All Mount Types</option><option value="SMD">SMD</option><option value="THT">THT</option></select>
-        <select id="dnp-filter"><option value="">All Rows</option><option value="N">Active Only</option><option value="Y">DNP Only</option></select>
+        <input  type="text" id="search-box"    data-i18n="search_placeholder" data-i18n-attr="placeholder" placeholder="Search components...">
+        <select id="mount-filter">
+          <option value=""    data-i18n="all_mount_types">All Mount Types</option>
+          <option value="SMD">SMD</option>
+          <option value="THT">THT</option>
+        </select>
+        <select id="dnp-filter">
+          <option value=""  data-i18n="all_rows">All Rows</option>
+          <option value="N">Active Only</option>
+          <option value="Y">DNP Only</option>
+        </select>
       </div>
 
       <div class="table-wrapper">
         <div style="overflow-x:auto;">
-          <table id="bom-table" style="table-layout:fixed;width:100%;border-collapse:collapse;">
+          <table id="bom-table" style="table-layout:auto;width:100%;border-collapse:collapse;">
             <thead>
               <tr>
-                <th style="width:28px;min-width:28px;text-align:center;">#</th>
-                <th style="width:110px;min-width:110px;">REF</th>
-                <th style="width:160px;min-width:160px;">DESCRIPTION</th>
-                <th style="width:150px;min-width:150px;">MPN</th>
-                <th style="width:90px;min-width:90px;">MFR</th>
-                <th style="width:80px;min-width:80px;">PACKAGE</th>
-                <th style="width:36px;min-width:36px;text-align:center;">QTY</th>
-                <th style="width:130px;min-width:130px;">UNIT €</th>
-                <th style="width:80px;min-width:80px;text-align:right;">DK PRICE</th>
-                <th style="width:80px;min-width:80px;text-align:right;">TOTAL PRICE</th>
-                <th style="width:75px;min-width:75px;">SELLER</th>
-                <th style="width:150px;min-width:150px;">AI SUPPLIERS</th>
-                <th style="width:70px;min-width:70px;text-align:center;">STATUS</th>
-                <th style="width:58px;min-width:58px;"></th>
+                <th style="width:28px;text-align:center;">#</th>
+                <th style="width:160px;min-width:160px;max-width:160px;" data-i18n="th_ref">REF</th>
+                <th data-i18n="th_desc">DESCRIPTION</th>
+                <th data-i18n="th_mpn">MPN</th>
+                <th data-i18n="th_mfr">MFR</th>
+                <th data-i18n="th_pkg">PACKAGE</th>
+                <th style="text-align:center;" data-i18n="th_qty">QTY</th>
+                <th data-i18n="th_unit">UNIT €</th>
+                <th style="text-align:right;" data-i18n="th_perboard">PER BOARD</th>
+                <th style="text-align:right;" data-i18n="th_ext">EXT TOTAL</th>
+                <th data-i18n="th_supplier">SUPPLIER</th>
+                <th data-i18n="th_stock">STOCK</th>
+                <th data-i18n="th_all_sup">ALL SUPPLIERS</th>
+                <th style="text-align:center;" data-i18n="th_status">STATUS</th>
+                <th data-i18n="th_ai">AI</th>
               </tr>
             </thead>
             <tbody id="bom-table-body"></tbody>
           </table>
         </div>
         <div class="total-bar">
-          <div>Active BOM Cost / Board</div>
+          <div data-i18n="bom_comp_cost">Active BOM Cost / Board</div>
           <div id="bom-total">€0.00</div>
         </div>
       </div>
@@ -108,7 +141,7 @@
     <!-- ISSUES TAB -->
     <div id="tab-issues" class="tab-content hidden">
       <div class="card">
-        <h2>⚠️ BOM Issues</h2>
+        <h2>⚠️ <span data-i18n="tab_issues">Issues</span></h2>
         <div id="issues-list"></div>
       </div>
     </div>
@@ -116,15 +149,23 @@
     <!-- SMT TAB -->
     <div id="tab-smt" class="tab-content hidden">
       <div class="card">
-        <h2>⚙️ SMT Feasibility Report</h2>
+        <h2>⚙️ <span data-i18n="tab_smt">SMT Check</span></h2>
         <div id="smt-overall" style="margin-bottom:16px;"></div>
         <div id="smt-summary" style="margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;"></div>
-        <button class="btn-primary" onclick="runSMTCheck()" style="margin-bottom:16px;">Run SMT Check</button>
+        <button class="btn-primary" onclick="runSMTCheck()" style="margin-bottom:16px;" data-i18n="check_smt">Run SMT Check</button>
         <div class="table-wrapper">
           <div style="overflow-x:auto;">
             <table>
               <thead>
-                <tr><th>Ref</th><th>Description</th><th>MPN</th><th>Package</th><th>Qty</th><th>Risk</th><th>Reason</th></tr>
+                <tr>
+                  <th data-i18n="th_ref">Ref</th>
+                  <th data-i18n="th_desc">Description</th>
+                  <th data-i18n="th_mpn">MPN</th>
+                  <th data-i18n="th_pkg">Package</th>
+                  <th data-i18n="th_qty">Qty</th>
+                  <th>Risk</th>
+                  <th>Reason</th>
+                </tr>
               </thead>
               <tbody id="smt-table-body"></tbody>
             </table>
@@ -136,51 +177,81 @@
     <!-- QUOTATION TAB -->
     <div id="tab-quote" class="tab-content hidden">
       <div class="card">
-        <h2>💰 Quotation Settings</h2>
+        <h2 data-i18n="quote_settings">💰 Quotation Settings</h2>
         <div class="form-grid">
-          <div class="form-group"><label>Customer Name</label><input type="text" id="customer-name" value="Acme Electronics"></div>
-          <div class="form-group"><label>Project Name</label><input type="text" id="project-name" value="My PCB Project"></div>
-          <div class="form-group"><label>Quotation Ref</label><input type="text" id="quote-ref" value="QT-2026-001"></div>
-          <div class="form-group"><label>Board Quantity</label><input type="number" id="board-qty" value="100" oninput="updateQuotation()"></div>
-          <div class="form-group"><label>Assembly Cost / Board (€)</label><input type="number" id="assembly-cost" value="8.5" step="0.5" oninput="updateQuotation()"></div>
-          <div class="form-group"><label>Margin (%)</label><input type="number" id="margin" value="20" oninput="updateQuotation()"></div>
+          <div class="form-group">
+            <label data-i18n="customer_name">CUSTOMER NAME</label>
+            <input type="text" id="customer-name" value="Acme Electronics">
+          </div>
+          <div class="form-group">
+            <label data-i18n="project_name">PROJECT NAME</label>
+            <input type="text" id="project-name" value="My PCB Project">
+          </div>
+          <div class="form-group">
+            <label data-i18n="quote_ref">QUOTATION REF</label>
+            <input type="text" id="quote-ref" value="QT-2026-001">
+          </div>
+          <div class="form-group">
+            <label data-i18n="board_qty">BOARD QUANTITY</label>
+            <input type="number" id="board-qty" value="100" oninput="updateQuotation()">
+          </div>
+          <div class="form-group">
+            <label data-i18n="asm_cost">ASSEMBLY COST / BOARD (€)</label>
+            <input type="number" id="assembly-cost" value="8.5" step="0.5" oninput="updateQuotation()">
+          </div>
+          <div class="form-group">
+            <label data-i18n="margin_pct">MARGIN (%)</label>
+            <input type="number" id="margin" value="20" oninput="updateQuotation()">
+          </div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Cost Breakdown</h2>
+        <h2 data-i18n="cost_breakdown">Cost Breakdown</h2>
         <table class="quote-table">
-          <thead><tr><th>Item</th><th>Per Board</th><th>Total (<span id="q-qty-label">100</span> pcs)</th></tr></thead>
+          <thead>
+            <tr>
+              <th data-i18n="item_col">Item</th>
+              <th data-i18n="per_board_col">Per Board</th>
+              <th>Total (<span id="q-qty-label">100</span> pcs)</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr><td>Component cost (BOM)</td><td id="q-bom-unit">€0.00</td><td id="q-bom-total">€0.00</td></tr>
-            <tr><td>Assembly cost</td><td id="q-asm-unit">€0.00</td><td id="q-asm-total">€0.00</td></tr>
-            <tr><td>Subtotal</td><td id="q-sub-unit">€0.00</td><td id="q-sub-total">€0.00</td></tr>
-            <tr><td>Margin (<span id="q-margin-label">20</span>%)</td><td id="q-markup-unit">€0.00</td><td id="q-markup-total">€0.00</td></tr>
-            <tr class="sell-row"><td>💰 SELL PRICE</td><td id="q-sell-unit">€0.00</td><td id="q-sell-total">€0.00</td></tr>
+            <tr><td data-i18n="bom_comp_cost">Component cost (BOM)</td><td id="q-bom-unit">€0.00</td><td id="q-bom-total">€0.00</td></tr>
+            <tr><td data-i18n="assembly_cost">Assembly cost</td>         <td id="q-asm-unit">€0.00</td><td id="q-asm-total">€0.00</td></tr>
+            <tr><td data-i18n="subtotal">Subtotal</td>                   <td id="q-sub-unit">€0.00</td><td id="q-sub-total">€0.00</td></tr>
+            <tr><td>Margin (<span id="q-margin-label">20</span>%)</td>   <td id="q-markup-unit">€0.00</td><td id="q-markup-total">€0.00</td></tr>
+            <tr class="sell-row">
+              <td data-i18n="sell_price">💰 SELL PRICE</td>
+              <td id="q-sell-unit">€0.00</td>
+              <td id="q-sell-total">€0.00</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <div class="card">
-        <h2>📥 Export</h2>
+        <h2 data-i18n="export_section">📊 Export</h2>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn-primary" onclick="exportExcel()">📊 Download Excel</button>
-          <button class="btn-primary" onclick="exportPDF()" style="background:#22c55e;">📄 Download PDF</button>
+          <button class="btn-primary"                            onclick="exportExcel()" data-i18n="dl_excel">📊 Download Excel</button>
+          <button class="btn-primary" style="background:#22c55e" onclick="exportPDF()"   data-i18n="dl_pdf">📄 Download PDF</button>
         </div>
       </div>
 
       <div class="card">
-        <h2>📧 AI Email Draft</h2>
-        <p style="margin-bottom:14px;opacity:0.7;font-size:13px;">Generate a professional email to send to your customer.</p>
-        <button class="btn-primary" onclick="draftEmail()">Draft Email with AI ✨</button>
+        <h2 data-i18n="ai_email_draft">📧 AI Email Draft</h2>
+        <p style="margin-bottom:14px;opacity:0.7;font-size:13px;" data-i18n="email_placeholder">
+          Generate a professional email to send to your customer.
+        </p>
+        <button class="btn-primary" onclick="draftEmail()" data-i18n="gen_email_btn">Draft Email with AI ✨</button>
         <div class="ai-output" id="email-output" style="display:none;margin-top:14px;"></div>
-        <button id="copy-email-btn" onclick="copyEmail()" style="display:none;margin-top:8px;" class="btn-outline">📋 Copy Email</button>
+        <button id="copy-email-btn" onclick="copyEmail()" style="display:none;margin-top:8px;" class="btn-outline" data-i18n="copy_email">📋 Copy Email</button>
       </div>
 
       <div class="card">
-        <h2>🤖 AI Quotation Description</h2>
+        <h2 data-i18n="ai_quote_desc">🤖 AI Quotation Description</h2>
         <p style="margin-bottom:14px;opacity:0.7;font-size:13px;">Generate a professional scope of work description.</p>
-        <button class="btn-primary" onclick="generateQuoteDescription()">Generate Description ✨</button>
+        <button class="btn-primary" onclick="generateQuoteDescription()" data-i18n="gen_desc_btn">Generate Description ✨</button>
         <div class="ai-output" id="quote-ai-output" style="display:none;margin-top:14px;"></div>
       </div>
     </div>
@@ -188,10 +259,12 @@
     <!-- AI TAB -->
     <div id="tab-ai" class="tab-content hidden">
       <div class="card">
-        <h2>🤖 AI Assistant</h2>
+        <h2>🤖 <span data-i18n="tab_ai">AI Assistant</span></h2>
         <div class="ai-row">
-          <input type="text" id="ai-input" placeholder="Ask about any component or EMS topic...">
-          <button class="btn-primary" onclick="askAI()">Ask AI</button>
+          <input type="text" id="ai-input"
+                 data-i18n="ai_placeholder" data-i18n-attr="placeholder"
+                 placeholder="Ask about any component or EMS topic...">
+          <button class="btn-primary" onclick="askAI()" data-i18n="ai_ask_btn">Ask AI</button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
           <button class="btn-quick" onclick="setQ('What does the STM32 microcontroller do?')">STM32 role</button>
@@ -214,42 +287,46 @@
     <!-- FULL AGENT TAB -->
     <div id="tab-agent" class="tab-content hidden">
       <div class="card">
-        <h2>🚀 Full EMS AI Agent</h2>
+        <h2>🚀 <span data-i18n="tab_agent">Full EMS AI Agent</span></h2>
         <p style="opacity:0.7;font-size:13px;margin-bottom:16px;">
           One click runs everything automatically: Fetching prices → SMT check → quotation → PDF → email draft.
         </p>
-        <button class="btn-primary" id="agent-btn" onclick="runFullAgent()" style="font-size:15px;padding:12px 28px;">
+        <button class="btn-primary" id="agent-btn" onclick="runFullAgent()"
+                style="font-size:15px;padding:12px 28px;" data-i18n="agent_run">
           🚀 Run Full Agent
         </button>
       </div>
 
       <div class="card hidden" id="agent-progress-card">
-        <h2>⏳ Agent Progress</h2>
+        <h2>⏳ <span data-i18n="agent_progress">Agent Progress</span></h2>
         <div id="agent-steps"></div>
       </div>
 
       <div class="card hidden" id="agent-results-card">
-        <h2>✅ Agent Complete</h2>
+        <h2>✅ <span data-i18n="agent_results">Agent Results</span></h2>
 
         <div style="margin-bottom:16px;">
-          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;">Quotation Summary</div>
+          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;"
+               data-i18n="agent_quote_sum">Quotation Summary</div>
           <div id="agent-quote-summary"></div>
         </div>
 
         <div style="margin-bottom:16px;">
-          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;">SMT Feasibility</div>
+          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;"
+               data-i18n="agent_smt_sum">SMT Summary</div>
           <div id="agent-smt-summary"></div>
         </div>
 
         <div style="margin-bottom:16px;">
-          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;">Email Draft</div>
+          <div style="font-size:12px;color:#8a93b0;margin-bottom:6px;font-family:monospace;text-transform:uppercase;"
+               data-i18n="agent_email_draft">Email Draft</div>
           <div class="ai-output" id="agent-email" style="display:block;"></div>
-          <button class="btn-outline" onclick="copyAgentEmail()" style="margin-top:8px;">📋 Copy Email</button>
+          <button class="btn-outline" onclick="copyAgentEmail()" style="margin-top:8px;" data-i18n="copy_btn">📋 Copy</button>
         </div>
 
         <div style="display:flex;gap:10px;">
-          <button class="btn-primary" onclick="exportPDF()">📄 Download PDF</button>
-          <button class="btn-primary" onclick="exportExcel()" style="background:#22c55e;">📊 Download Excel</button>
+          <button class="btn-primary"                             onclick="exportPDF()"   data-i18n="dl_pdf">📄 Download PDF</button>
+          <button class="btn-primary" style="background:#22c55e" onclick="exportExcel()" data-i18n="dl_excel">📊 Download Excel</button>
         </div>
       </div>
     </div>
@@ -259,14 +336,14 @@
       <div class="card">
         <h2>🔬 Full Feasibility Analysis</h2>
         <p style="color:#8a93b0;font-size:13px;margin-bottom:16px;">
-          Advanced feasibility checks beyond SMT — DFM rules, component clearance, 
+          Advanced feasibility checks beyond SMT — DFM rules, component clearance,
           thermal analysis, and assembly complexity scoring.
         </p>
         <div style="padding:40px;text-align:center;border:2px dashed #2a3050;border-radius:8px;">
           <div style="font-size:32px;margin-bottom:12px;">🔬</div>
-          <div style="color:#8a93b0;font-size:14px;">Coming soon — Full DFM & feasibility engine</div>
+          <div style="color:#8a93b0;font-size:14px;">Coming soon — Full DFM &amp; feasibility engine</div>
           <div style="color:#4a5570;font-size:12px;margin-top:8px;">
-            Will include: DFM rules · Thermal analysis · Component clearance · 
+            Will include: DFM rules · Thermal analysis · Component clearance ·
             Complexity scoring · Machine compatibility · Risk report PDF
           </div>
         </div>
@@ -278,14 +355,14 @@
       <div class="card">
         <h2>🖥️ PCB Analysis</h2>
         <p style="color:#8a93b0;font-size:13px;margin-bottom:16px;">
-          Upload Gerber or Pick &amp; Place files for layer stackup analysis, 
+          Upload Gerber or Pick &amp; Place files for layer stackup analysis,
           component placement validation, and feeder setup suggestion.
         </p>
         <div style="padding:40px;text-align:center;border:2px dashed #2a3050;border-radius:8px;">
           <div style="font-size:32px;margin-bottom:12px;">🖥️</div>
           <div style="color:#8a93b0;font-size:14px;">Coming soon — PCB &amp; Gerber analysis</div>
           <div style="color:#4a5570;font-size:12px;margin-top:8px;">
-            Will include: Gerber upload · Layer stackup · Pick &amp; Place validation · 
+            Will include: Gerber upload · Layer stackup · Pick &amp; Place validation ·
             Feeder plan · Component placement check · SMT program export
           </div>
         </div>
@@ -295,17 +372,17 @@
     <!-- PROGRAMMING TAB -->
     <div id="tab-programming" class="tab-content hidden">
       <div class="card">
-        <h2>💾 Programming & Firmware</h2>
+        <h2>💾 Programming &amp; Firmware</h2>
         <p style="color:#8a93b0;font-size:13px;margin-bottom:16px;">
-          Manage firmware versions, programming requirements, and flash configurations 
+          Manage firmware versions, programming requirements, and flash configurations
           for programmable components in your BOM.
         </p>
         <div style="padding:40px;text-align:center;border:2px dashed #2a3050;border-radius:8px;">
           <div style="font-size:32px;margin-bottom:12px;">💾</div>
-          <div style="color:#8a93b0;font-size:14px;">Coming soon — Programming & Firmware management</div>
+          <div style="color:#8a93b0;font-size:14px;">Coming soon — Programming &amp; Firmware management</div>
           <div style="color:#4a5570;font-size:12px;margin-top:8px;">
-            Will include: Firmware version tracking · Flash configuration · 
-            ISP/JTAG/SWD support · Programming time estimation · 
+            Will include: Firmware version tracking · Flash configuration ·
+            ISP/JTAG/SWD support · Programming time estimation ·
             Batch programming plan · MCU/FPGA detection from BOM
           </div>
         </div>
