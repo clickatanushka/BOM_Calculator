@@ -6,3 +6,5 @@ outputs/
 *.pyc
 *.pdf
 *.xlsx
+ai_helper.py
+

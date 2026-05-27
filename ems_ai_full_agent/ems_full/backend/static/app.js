@@ -1458,7 +1458,10 @@ function renderStats() {
 // ==========================================
 
 function getPriceState(row) {
-    if (row.price_state) return row.price_state;
+    // If manually set by user, trust it
+    if (row.price_state === "manual") return "manual";
+    if (row.price_state === "rfq")    return "rfq";
+    // If has a real price, it's auto regardless of what backend said
     if (row.unit_price)  return "auto";
     return "unpriced";
 }
@@ -1588,14 +1591,17 @@ function renderBOMTable() {
             statusBadge = `<span class="badge badge-dnp">${t("badge_dnp")}</span>`;
         } else if (state === "rfq") {
             statusBadge = `<span class="badge" style="background:#f59e0b22;color:#f59e0b;">${t("badge_rfq")}</span>`;
-        } else if (state === "manual") {
-            statusBadge = `<span class="badge" style="background:#8b5cf622;color:#8b5cf6;">${t("badge_manual")}</span>`;
-        } else if (!hasPrice) {
+        } else if (state === "unpriced") {
             statusBadge = `<span class="badge badge-warn">${t("badge_no_price")}</span>`;
-        } else if (row.cheaper_oos) {
-            statusBadge = `<span class="badge" style="background:#a78bfa22;color:#a78bfa;">${t("badge_alt")}</span>`;
         } else {
-            statusBadge = `<span class="badge badge-ok">${t("badge_ok")}</span>`;
+            const stock = row.nexar_stock;
+            if (stock == null) {
+                statusBadge = `<span class="badge" style="background:#4a557022;color:#8a93b0;">—</span>`;
+            } else if (stock > 0) {
+                statusBadge = `<span class="badge badge-ok" style="background:#22c55e22;color:#22c55e;">✓</span>`;
+            } else {
+                statusBadge = `<span class="badge" style="background:#ef444422;color:#ef4444;font-weight:700;">OUT</span>`;
+            }
         }
 
         // ── WARNINGS ──
@@ -1723,7 +1729,7 @@ function renderBOMTable() {
             <td style="width:30px">${row.id || ""}</td>
             <td class="mono" style="width:160px;min-width:160px;max-width:160px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="${row.ref||''}">${row.ref || "—"}</td>
             <td style="min-width:150px">${row.description || "—"}</td>
-            <td class="mono small" style="white-space:nowrap">${row.mpn || "—"}</td>
+            <td class="mono small" style="white-space:nowrap">${row.nexar_url ? `<a href="${row.nexar_url}" target="_blank" style="color:#4f8fff;text-decoration:underline;">${row.mpn || "—"}</a>` : (row.mpn || "—")}</td>
             <td style="min-width:100px">${row.manufacturer || "—"}</td>
             <td class="mono small" style="min-width:90px">${row.package || "—"}</td>
             <td class="mono" style="width:40px;text-align:center">${row.qty || 0}</td>
