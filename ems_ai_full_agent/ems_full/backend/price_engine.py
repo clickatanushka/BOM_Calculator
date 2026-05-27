@@ -85,10 +85,16 @@ def best_price_for_qty(price_breaks, total_qty, qty_key, price_key):
 # ==========================================
 # DIGIKEY TOKEN
 # ==========================================
+# replace this
 _dk_token = {"token": None}
 
+# with this
+import time
+_dk_token = {"token": None, "expires_at": 0}
+
 def get_digikey_token():
-    if _dk_token["token"]:
+    # refresh if expired or missing
+    if _dk_token["token"] and time.time() < _dk_token["expires_at"]:
         return _dk_token["token"]
     try:
         res = requests.post(DIGIKEY_TOKEN_URL, data={
@@ -99,8 +105,11 @@ def get_digikey_token():
         if res.status_code != 200:
             print(f"DigiKey token error {res.status_code}")
             return None
-        token = res.json().get("access_token")
-        _dk_token["token"] = token
+        data  = res.json()
+        token = data.get("access_token")
+        # expires_in is usually 599 seconds — refresh 60s early
+        _dk_token["token"]      = token
+        _dk_token["expires_at"] = time.time() + data.get("expires_in", 599) - 60
         return token
     except Exception as e:
         print("DigiKey token exception:", e)
@@ -508,21 +517,21 @@ def enrich_bom(bom_rows, board_qty=1):
 
             row.update({
                 # Pricing — all in EUR
-                "unit_price":        unit_price,    # EUR tier unit price
-                "unit_price_raw":    cheapest["price"],       # original currency
+                "unit_price":        unit_price,
+                "unit_price_raw":    cheapest["price"],
                 "unit_currency_raw": cheapest.get("currency", "USD"),
-                "per_board_cost":    per_board,     # EUR: unit_price × component_qty
-                "extended_price":    ext_price,     # EUR: unit_price × total_qty
+                "per_board_cost":    per_board,
+                "extended_price":    ext_price,
                 "required_qty":      total_qty,
                 "component_qty":     component_qty,
                 "board_qty":         board_qty,
 
-                # Supplier info
                 "nexar_price":        unit_price,
                 "nexar_price_raw":    cheapest["price"],
                 "nexar_currency_raw": cheapest.get("currency", "USD"),
                 "nexar_stock":        cheapest["stock"],
                 "nexar_supplier":     cheapest["supplier"],
+                "nexar_url":          result["top3_suppliers"][0].get("url", "") if result["top3_suppliers"] else "",
                 "nexar_currency":     "EUR",
                 "nexar_all":          result["top3_suppliers"],
                 "nexar_price_breaks": (dk or cheapest).get("price_breaks", []),
@@ -545,12 +554,12 @@ def enrich_bom(bom_rows, board_qty=1):
 
         return i, row
 
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-    #     for i, row in executor.map(lookup, enumerate(bom_rows)):
-    #         enriched[i] = row
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        for i, row in executor.map(lookup, enumerate(bom_rows)):
+            enriched[i] = row
 
-    for item in enumerate(bom_rows):
-        i, row = lookup(item)
-        enriched[i] = row
+    # for item in enumerate(bom_rows):
+    #     i, row = lookup(item)
+    #     enriched[i] = row
 
     return enriched
