@@ -1,6 +1,9 @@
 import requests
 import concurrent.futures
 import math
+from cache import get_cached, set_cached, init_cache
+
+init_cache()
 
 DIGIKEY_CLIENT_ID     = "xZNLqBj9kFGjls5vRocFu6tnSVj932GlpLgGTkmXrqWvsetK"
 DIGIKEY_CLIENT_SECRET = "nX3vtCXALui2UAIbIfLFyFWlFobXTx1NADDBofyUSGTgI58yeUiN5R3Yy1pBbk0L"
@@ -415,7 +418,26 @@ def search_farnell(mpn, total_qty=1, exact=True):
 # ==========================================
 # SEARCH ONE PART — all 3 in parallel
 # ==========================================
+# ── THIS REPLACES your existing search_part() ──
 def search_part(mpn, total_qty=1):
+
+    # ADD THIS BLOCK at the very top ↓
+    cached = get_cached(mpn)
+    if cached:
+        print(f"  [{mpn}] ✓ cache hit")
+        return {
+            "cheapest_price":     cached["price"],
+            "cheapest_price_raw": cached["price"],
+            "cheapest_supplier":  cached["supplier"],
+            "cheapest_currency":  "EUR",
+            "stock":              cached["stock"],
+            "price_breaks":       [],
+            "top3_suppliers":     cached["all_suppliers"],
+            "from_cache":         True,
+        }
+    # ↑ ADD THIS BLOCK at the very top
+
+    # everything below is YOUR EXISTING CODE, unchanged
     results = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
@@ -430,6 +452,7 @@ def search_part(mpn, total_qty=1):
                 results.append(r)
 
     if not results:
+        # fuzzy fallback — your existing code
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = {
                 executor.submit(search_digikey, mpn, total_qty, False): "DigiKey",
@@ -444,33 +467,31 @@ def search_part(mpn, total_qty=1):
     if not results:
         return None
 
-    # Attach EUR-normalised price to every result for fair comparison
+    # your existing sorting logic
     for r in results:
         r["price_eur"] = to_eur(r["price"], r.get("currency", "USD"))
 
-    # Sort: in-stock first, then cheapest in EUR
     results.sort(key=lambda x: (
-        x["stock"] < total_qty,   # False (0) = can fulfill = goes first
-        x["price_eur"]            # cheapest in EUR
+        x["stock"] < total_qty,
+        x["price_eur"]
     ))
 
     cheapest = results[0]
 
-    print(f"    Supplier comparison (EUR):")
-    for r in results:
-        print(f"      {r['supplier']}: {r['currency']}{r['price']} "
-              f"= €{r['price_eur']:.4f} | stock: {r['stock']}")
-    print(f"    → Winner: {cheapest['supplier']} €{cheapest['price_eur']:.4f}")
-
-    return {
-        "cheapest_price":     cheapest["price_eur"],   # always EUR
-        "cheapest_price_raw": cheapest["price"],        # original currency price
+    final_result = {
+        "cheapest_price":     cheapest["price_eur"],
+        "cheapest_price_raw": cheapest["price"],
         "cheapest_supplier":  cheapest["supplier"],
-        "cheapest_currency":  "EUR",                    # normalised
+        "cheapest_currency":  "EUR",
         "stock":              cheapest["stock"],
         "price_breaks":       cheapest.get("price_breaks", []),
         "top3_suppliers":     results[:3],
     }
+
+    # ADD THIS LINE before return ↓
+    set_cached(mpn, final_result)
+
+    return final_result
 
 
 # ==========================================
@@ -502,7 +523,7 @@ def enrich_bom(bom_rows, board_qty=1):
 
         if result:
             cheapest   = result["top3_suppliers"][0]
-            unit_price = cheapest["price_eur"]       # EUR-normalised unit price
+            unit_price = cheapest.get("price_eur") or to_eur(cheapest["price"], cheapest.get("currency", "USD"))
             ext_price  = round(unit_price * total_qty, 4)
             per_board  = round(unit_price * component_qty, 4)
 
@@ -535,7 +556,8 @@ def enrich_bom(bom_rows, board_qty=1):
                 "nexar_currency":     "EUR",
                 "nexar_all":          result["top3_suppliers"],
                 "nexar_price_breaks": (dk or cheapest).get("price_breaks", []),
-                "below_minimum":      cheapest.get("below_minimum", False),
+                "below_minimum":      cheapest.get("below_minimum", False),\
+                "from_cache":         result.get("from_cache", False),  # ← add this
 
                 # DigiKey specifically
                 "digikey_price": to_eur(dk["price"], "USD") if dk else unit_price,
