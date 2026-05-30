@@ -336,6 +336,10 @@ from email_drafter import draft_quotation_email
 from agent import run_agent
 from pdf_bom_parser import parse_pdf_bom
 
+from cache import clear_expired, clear_mpn
+import sqlite3
+from cache import DB_PATH
+
 app = Flask(__name__)
 CORS(app)
 
@@ -397,6 +401,31 @@ def ai_route():
         return jsonify({"error": str(e)}), 500
 
 
+
+@app.route("/cache-stats")
+def cache_stats():
+    clear_expired()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute("""
+        SELECT mpn, supplier, price, stock, 
+               ROUND((? - fetched_at)/3600, 1) as age_hours
+        FROM price_cache 
+        ORDER BY fetched_at DESC
+        LIMIT 100
+    """, (time.time(),)).fetchall()
+    conn.close()
+    return jsonify({
+        "cached_parts": len(rows),
+        "entries": [dict(r) for r in rows]
+    })
+
+@app.route("/cache-clear/<mpn>", methods=["POST"])
+def cache_clear(mpn):
+    clear_mpn(mpn)
+    return jsonify({"cleared": mpn})
+
+
 # ── ENRICH BOM ──
 # board_qty is passed from frontend.
 # price_engine calculates total_qty = component_qty × board_qty,
@@ -416,20 +445,18 @@ def enrich_bom_route():
     data      = request.json
     bom       = data.get("bom", [])
     board_qty = int(data.get("board_qty", 1))
+    print(f"DEBUG board_qty received: {board_qty}")  # ← add this
 
     try:
         enriched = enrich_bom(bom, board_qty=board_qty)
+        active   = [r for r in enriched if r.get("dnp") != "Y"]
 
-        active = [r for r in enriched if r.get("dnp") != "Y"]
-
-        # Total procurement spend (all components × all boards)
         total_cost = sum(
             r.get("extended_price") or 0
             for r in active
             if r.get("extended_price") is not None
         )
 
-        # Component cost per single board (for quotation page)
         bom_cost_per_board = sum(
             r.get("per_board_cost") or 0
             for r in active
@@ -437,10 +464,10 @@ def enrich_bom_route():
         )
 
         return jsonify({
-            "bom":               enriched,
-            "total_cost":        round(total_cost, 2),        # total procurement
-            "bom_cost_per_board": round(bom_cost_per_board, 4), # per-board BOM cost
-            "board_qty":         board_qty,
+            "bom":                enriched,
+            "total_cost":         round(total_cost, 2),
+            "bom_cost_per_board": round(bom_cost_per_board, 4),
+            "board_qty":          board_qty,
         })
 
     except Exception as e:
